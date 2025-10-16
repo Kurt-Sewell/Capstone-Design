@@ -1,0 +1,146 @@
+import tkinter as tk
+from tkinter import ttk
+import random
+import math
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from matplotlib.animation import FuncAnimation
+import numpy as np
+
+# Constants
+L = 100.0          # mm, geometry reference for angle calculation
+ARM_LENGTH = 0.25  # m, lever arm length for torque
+MAX_FORCE_LBS = 2000
+WARNING_FORCE = 1700   # lbs threshold for flashing
+
+class FSAE_Dashboard:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("FSAE Telemetry Dashboard")
+
+        # ---- Top Frame ----
+        frame_top = ttk.Frame(root)
+        frame_top.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Left: Digital readout
+        self.force_label = tk.Label(frame_top, text="0 lbs",
+                                    font=("Consolas", 36, "bold"),
+                                    fg="white", bg="black")
+        self.force_label.pack(side="left", expand=True, padx=20)
+
+        # Right: Gauge
+        self.gauge_fig = Figure(figsize=(4,3), dpi=100, facecolor="#1e1e1e")
+        self.gauge_ax = self.gauge_fig.add_subplot(111, projection='polar')
+        self.setup_gauge()
+        self.gauge_canvas = FigureCanvasTkAgg(self.gauge_fig, master=frame_top)
+        self.gauge_canvas.get_tk_widget().pack(side="right", expand=True, fill="both")
+
+        # ---- Bottom Frame: Torque vs Angle Graph ----
+        frame_bottom = ttk.LabelFrame(root, text="Torque vs Angle")
+        frame_bottom.pack(fill="both", expand=True, padx=10, pady=10)
+
+        self.fig = Figure(figsize=(6,4), dpi=100, facecolor="#1e1e1e")
+        self.ax = self.fig.add_subplot(111)
+        self.ax.set_facecolor("#111")
+        self.ax.set_xlabel("Torque (Nm)", color="white")
+        self.ax.set_ylabel("Angle (deg)", color="white")
+        self.ax.tick_params(colors="white")
+        self.ax.grid(True, color="#333", linestyle="--")
+
+        self.canvas = FigureCanvasTkAgg(self.fig, master=frame_bottom)
+        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+
+        # Data for torque vs angle
+        self.angle_data = []
+        self.torque_data = []
+        (self.line,) = self.ax.plot([], [], marker="o", color="#00aaff", lw=2, ms=6, mec="white")
+
+        # State for blinking
+        self.blink_state = True
+
+        # Animations
+        self.ani1 = FuncAnimation(self.gauge_fig, self.update_gauge, interval=1000, blit=False)
+        self.ani2 = FuncAnimation(self.fig, self.update_plot, interval=1000, blit=False)
+
+    def setup_gauge(self):
+        """Setup static gauge background"""
+        self.gauge_ax.set_theta_zero_location("S")
+        self.gauge_ax.set_theta_direction(-1)
+        self.gauge_ax.set_ylim(0, 10)
+        self.gauge_ax.set_yticklabels([])
+        self.gauge_ax.set_xticklabels([])
+        self.gauge_ax.grid(False)
+        self.gauge_ax.set_facecolor("#1e1e1e")
+
+        # Zones
+        self.gauge_ax.bar(np.linspace(0, np.pi*0.7, 50), 10, width=np.pi/50, color="#00ffcc", alpha=0.6)
+        self.gauge_ax.bar(np.linspace(np.pi*0.7, np.pi*0.85, 20), 10, width=np.pi/50, color="#ffff00", alpha=0.7)
+        self.gauge_ax.bar(np.linspace(np.pi*0.85, np.pi*0.95, 15), 10, width=np.pi/50, color="#ff9900", alpha=0.7)
+        self.gauge_ax.bar(np.linspace(np.pi*0.95, np.pi, 10), 10, width=np.pi/50, color="#ff0000", alpha=0.8)
+
+        # Needle placeholders
+        self.needle_line, = self.gauge_ax.plot([], [], color="white", lw=3)
+        self.needle_dot, = self.gauge_ax.plot([], [], "o", color="red", markersize=12)
+
+    def get_sensor_data(self):
+        """Simulated data — replace with real sensors"""
+        force_lbs = random.uniform(500, 2000)   # lbs
+        tof_distance = random.uniform(80, 120)  # mm
+        angle_rad = math.atan2(tof_distance, L)
+        angle_deg = math.degrees(angle_rad)
+        force_newtons = force_lbs * 4.448
+        torque = force_newtons * ARM_LENGTH
+        return force_lbs, angle_deg, torque
+
+    def update_gauge(self, frame):
+        force_lbs, _, _ = self.get_sensor_data()
+
+        # Update needle
+        theta = (force_lbs / MAX_FORCE_LBS) * np.pi
+        self.needle_line.set_data([theta, theta], [0, 10])
+        self.needle_dot.set_data(theta, 10)
+
+        # Decide color
+        if force_lbs < 900:
+            color = "#00ffcc"
+        elif force_lbs < 1350:
+            color = "#ffff00"
+        elif force_lbs < WARNING_FORCE:
+            color = "#ff9900"
+        else:
+            # Flash red/black
+            self.blink_state = not self.blink_state
+            color = "#ff0000" if self.blink_state else "#000000"
+
+        # Update digital readout
+        self.force_label.config(text=f"{force_lbs:.0f} lbs", fg=color)
+
+        self.gauge_canvas.draw()
+
+    def update_plot(self, frame):
+        _, angle, torque = self.get_sensor_data()
+
+        # Append new data
+        self.angle_data.append(angle)
+        self.torque_data.append(torque)
+        if len(self.angle_data) > 50:
+            self.angle_data.pop(0)
+            self.torque_data.pop(0)
+
+        # Update flipped axes (Torque X, Angle Y)
+        self.line.set_data(self.torque_data, self.angle_data)
+        self.ax.relim()
+        self.ax.autoscale_view()
+
+        self.canvas.draw()
+        return self.line,
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = FSAE_Dashboard(root)
+    root.mainloop()
+
+
