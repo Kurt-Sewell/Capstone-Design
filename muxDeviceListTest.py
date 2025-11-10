@@ -3,10 +3,11 @@
  # This example shows using TCA9548A to perform a simple scan for connected devices
 import os
 os.environ["BLINKA_I2C"] = "13"
+import busio
 import board
 import adafruit_tca9548a
  # Create I2C bus as normal
-i2c = board.I2C() # uses board.SCL and board.SDA
+i2c = busio.I2C(board.SCL, board.SDA) # uses board.SCL and board.SDA
  # i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a 
 #microcontroller
  # Create the TCA9548A object and give it the I2C bus

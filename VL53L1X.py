@@ -1,10 +1,11 @@
 import os, time
 os.environ["BLINKA_I2C"] = "13"   # ensure this is set before importing board/busio
 import board
+import busio
 import adafruit_tca9548a
 from adafruit_vl53l1x import VL53L1X
 
-i2c = board.I2C() # uses board.SCL and board.SDA
+i2c = busio.I2C(board.SCL, board.SDA) # uses board.SCL and board.SDA
 tca = adafruit_tca9548a.TCA9548A(i2c)
 vl1 = VL53L1X(tca[0])
 # vl2 = VL53L1X(tca[1])
