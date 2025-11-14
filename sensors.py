@@ -2,7 +2,8 @@
 # Pi-only. Adafruit HX711 (D6=DOUT, D11=SCK) -> raw counts & pounds.
 # Optional: TCA9548A->VL53L1X, BNO055 (UART). Non-blocking, prints brief HX debug.
 
-import math, time, threading
+import math, time, threading, os
+os.environ["BLINKA_I2C"] = "13"
 import board, busio, digitalio, serial
 from adafruit_tca9548a import TCA9548A
 
