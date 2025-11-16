@@ -6,6 +6,7 @@ import math, time, threading, os
 os.environ["BLINKA_I2C"] = "13"
 import board, busio, digitalio, serial
 from adafruit_tca9548a import TCA9548A
+import numpy as np
 
 # Optional drivers (load if installed)
 try:
@@ -27,7 +28,7 @@ from adafruit_hx711.analog_in import AnalogIn
 # -------- Rig constants --------
 L_BASELINE_MM = 100.0
 ARM_LENGTH_M  = 0.25
-TCA_CHANNELS  = [0,1,2,3,4,5,6,7]
+TCA_CHANNELS  =  8 #[0,1,2,3,4,5,6,7]
 
 # HX711 pins: D6 = DOUT (input), D11 = SCK (output)
 HX_DATA_PIN = digitalio.DigitalInOut(board.D6)   # BCM6, phys 31
@@ -51,8 +52,8 @@ class SensorReader:
         # outputs the dashboard reads
         self.force_lbs = 0.0
         self.force_raw = 0            # <- raw counts exposed for debugging
-        self.angles_tof_deg = [0.0] * len(TCA_CHANNELS)
-        self.tof_active = [False] * len(TCA_CHANNELS)
+        self.angles_tof_deg = [0.0] * TCA_CHANNELS
+        self.tof_active = [False] * TCA_CHANNELS
         self.bno_euler_deg = {"roll": 0.0, "pitch": 0.0, "yaw": 0.0}
         self.angle_deg = 0.0
 
@@ -64,20 +65,30 @@ class SensorReader:
         self._tca = TCA9548A(self._i2c)
 
         # VL53L1X per channel (only init if present)
-        self._tof = [None] * len(TCA_CHANNELS)
+        self._tof = [None] * TCA_CHANNELS
         if HAVE_VL53:
-            for i, ch in enumerate(TCA_CHANNELS):
+            # if 0x29 in self._tca[i].scan():
+            for i in range(TCA_CHANNELS):
                 try:
-                    ch_i2c = self._tca[ch]
-                    if 0x29 in ch_i2c.scan():
-                        s = VL53L1X(ch_i2c)
-                        s.distance_mode = 1    # short
-                        s.timing_budget = 50   # ms
-                        s.start_ranging()
-                        self._tof[i] = s
-                        self.tof_active[i] = True
-                except Exception:
+                    self._tof[i] = VL53L1X(self._tca[i])
+                    self._tof[i].start_ranging()
+                    self._tof[i].timing_budget = 500
+                    self.tof_active[i] = True
+                    print(self._tof[i], "At position", i)
+                except:
                     pass
+        #     for i, ch in enumerate(TCA_CHANNELS):
+        #         try:
+        #             ch_i2c = self._tca[ch]
+        #             if 0x29 in ch_i2c.scan():
+        #                 s = VL53L1X(ch_i2c)
+        #                 s.distance_mode = 1    # short
+        #                 # s.timing_budget = 50   # ms
+        #                 s.start_ranging()
+        #                 self._tof[i] = s
+        #                 self.tof_active[i] = True
+        #         except Exception:
+        #             pass
 
         # BNO055 (UART preferred)
         self._bno = None
@@ -137,18 +148,31 @@ class SensorReader:
                 pass
 
             # -------- VL53L1X angles (if present) --------
-            for i, s in enumerate(self._tof):
-                if not s:
-                    continue
+            for i in range(TCA_CHANNELS):
                 try:
-                    if s.data_ready:
-                        d_mm = float(s.distance) * 10.0  # cm -> mm
-                        s.clear_interrupt()
-                        self.angles_tof_deg[i] = math.degrees(
-                            math.atan2(max(1e-6, d_mm), L_BASELINE_MM)
-                        )
-                except Exception:
+                    d_mm = self._tof[i].distance * 10.0  # cm -> mm
+                    self._tof[i].clear_interrupt()
+                    self.angles_tof_deg[i] = math.degrees(
+                        math.atan2(max(1e-6, d_mm), L_BASELINE_MM)
+                    )
+                    print(self.angles_tof_deg[i])
+                except:
+                    print("Problem with ToF sensor", i+1)
                     pass
+            # for i, s in enumerate(self._tof):
+            #     if not s:
+            #         continue
+            #     try:
+            #         if s.data_ready:
+            #             d_mm = float(s.distance) * 10.0  # cm -> mm
+            #             s.clear_interrupt()
+            #             self.angles_tof_deg[i] = math.degrees(
+            #                 math.atan2(max(1e-6, d_mm), L_BASELINE_MM)
+            #             )
+            #             print(self.angles_tof_deg[i])
+            #     except Exception:
+            #         pass
+            #         print("Problem with ToF sensor", s, i)
 
             # -------- BNO055 Euler (if present) --------
             if self._bno:
