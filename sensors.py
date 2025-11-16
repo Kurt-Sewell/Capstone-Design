@@ -153,7 +153,7 @@ class SensorReader:
                     d_mm = self._tof[i].distance * 10.0  # cm -> mm
                     self._tof[i].clear_interrupt()
                     self.angles_tof_deg[i] = math.degrees(
-                        math.atan2(max(1e-6, d_mm), L_BASELINE_MM)
+                        math.acos(max(1e-6, d_mm), L_BASELINE_MM)
                     )
                     print(self.angles_tof_deg[i])
                 except:
