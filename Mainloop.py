@@ -1,40 +1,28 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
-import adafruit_blinka
-# This example shows using two TSL2491 light sensors attached to TCA9548A channels 0 and 1.
-# Use with other I2C sensors would be similar.
-import time
+import os
+os.environ["BLINKA_I2C"] = "13"
+import time, busio, digitalio, board
+import VL53L1Xcode
+#import BNO055onUART
+import HX711Test
 
-import adafruit_vl53l1x
-import board
+# from adafruit_vl53l1x import VL53L1X
+# import board
 
-import adafruit_tca9548a
+# import adafruit_tca9548a
+# import adafruit_bno055, serial
+
+# uart = serial.Serial("/dev/ttyAMA0", baudrate=9600, timeout=1)
+# bno = adafruit_bno055.BNO055_UART(uart)
 
 # Create I2C bus as normal
-i2c = board.I2C()  # uses board.SCL and board.SDA
+# i2c = busio.I2C(board.SCL, board.SDA)  # uses board.SCL and board.SDA
 # i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
 
 # Create the TCA9548A object and give it the I2C bus
-tca = adafruit_tca9548a.TCA9548A(i2c)
+# tca = adafruit_tca9548a.TCA9548A(i2c)
 
-def distance(sensor):
-    """Get distance reading from a VL53L1X sensor with error handling."""
-    try:
-        return sensor.distance
-    except RuntimeError:
-        return None
-
-# For each sensor, create it using the TCA9548A channel instead of the I2C object
-vl1 = adafruit_vl53l1x.VL53L1X(tca[0])
-vl2 = adafruit_vl53l1x.VL53L1X(tca[1])
-vl3 = adafruit_vl53l1x.VL53L1X(tca[2])
-vl4 = adafruit_vl53l1x.VL53L1X(tca[3])
-vl5 = adafruit_vl53l1x.VL53L1X(tca[4])
-vl6 = adafruit_vl53l1x.VL53L1X(tca[5])
-vl7 = adafruit_vl53l1x.VL53L1X(tca[6])
-vl8 = adafruit_vl53l1x.VL53L1X(tca[7])
-
-# After initial setup, can just use sensors as normal.
-while True:
-    print("Distance 1: {} cm".format(distance(vl1)), "Distance 2: {} cm".format(distance(vl2)), "Distance 3: {} cm".format(distance(vl3)), "Distance 4: {} cm".format(distance(vl4)), "Distance 5: {} cm".format(distance(vl5)), "Distance 6: {} cm".format(distance(vl6)), "Distance 7: {} cm".format(distance(vl7)), "Distance 8: {} cm".format(distance(vl8)))
-    time.sleep(0.1)
+tofData = VL53L1Xcode.getAngles()
+# bnoDAta = BNO055onUART.getBNO055Data()
+# HX711Test.tareHX711()
+# forceData = HX711Test.getHX711Val()
+print("Angles from VL53L1X sensors: {}".format(tofData))

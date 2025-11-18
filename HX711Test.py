@@ -45,22 +45,27 @@ hx711 = HX711(data, clock)
 channel_a = AnalogIn(hx711, HX711.CHAN_A_GAIN_128)
 tend = time.monotonic() + 5.0
 zeros = []
-while time.monotonic() < tend:
-    # hx711.tare_value_a(hx711.get_value(hx711.read_channel_raw(HX711.CHAN_A_GAIN_128)))
-    try:
-        v = channel_a.value
-        zeros.append(v)
-    except:
-        pass
-    time.sleep(0.01)
-print("Zero readings over 5 seconds: {} samples".format(len(zeros)))
-hxZero = sum(zeros) / len(zeros)
-print("Calculated zero offset: {}".format(hxZero))
+def tareHX711():
+    while time.monotonic() < tend:
+        # hx711.tare_value_a(hx711.get_value(hx711.read_channel_raw(HX711.CHAN_A_GAIN_128)))
+        try:
+            v = channel_a.value
+            zeros.append(v)
+        except:
+            pass
+        time.sleep(0.01)
+    print("Zero readings over 5 seconds: {} samples".format(len(zeros)))
+    hxZero = sum(zeros) / len(zeros)
+    print("Calculated zero offset: {}".format(hxZero))
+    return hxZero
 
 # def getVal():
 #     # AnalogIn.value is a property, not a callable function
 #     return channel_a.value
 
-while True:
+def getHX711Val():
+    if not hxZero:
+        hxZero = tareHX711()
     print("Reading: {}".format(channel_a.value - hxZero))
     time.sleep(1)
+    return

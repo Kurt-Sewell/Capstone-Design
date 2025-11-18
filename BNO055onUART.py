@@ -20,14 +20,14 @@ def temp():
     last_temp = result
     return result
 
-while True:
-    print("Temperature: {} degrees C".format(temp()))
-    print("Accelerometer: {} (m/s^2)".format(bno.acceleration))
+def getBNO055Data():
+    # print("Temperature: {} degrees C".format(temp()))
+    # print("Accelerometer: {} (m/s^2)".format(bno.acceleration))
     print("Gyroscope: {} (degrees/s)".format(bno.gyro))
     # print("Magnetometer: {} (microteslas)".format(bno.magnetic))
     # print("Euler angles: {} (degrees)".format(bno.euler))
     # print("Quaternion: {}".format(bno.quaternion))
     # print("Linear acceleration: {} (m/s^2)".format(bno.linear_acceleration))
     # print("Gravity: {} (m/s^2)".format(bno.gravity))
-    print("")
-    time.sleep(1.0)
+    return bno.gyro
+
