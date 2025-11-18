@@ -1,4 +1,4 @@
-import os, time
+import os, time, math
 os.environ["BLINKA_I2C"] = "13"   # ensure this is set before importing board/busio
 import board
 import busio
@@ -9,7 +9,17 @@ import numpy as np
 i2c = busio.I2C(board.SCL, board.SDA) # uses board.SCL and board.SDA
 tca = adafruit_tca9548a.TCA9548A(i2c)
 tof = [None] * 8
-ch = 2
+values = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0]])
+ch = 8
+adj = 100 #cm
+theta = [None] * ch
 for i in range(ch):
     try:
         tof[i] = VL53L1X(tca[i])
@@ -39,10 +49,23 @@ print("Timing Budget: {}".format(tof[0].timing_budget))
 # vl2.start_ranging()
     
 while True:
+    for j in range(8):
+        for i in range(ch):
+            try:
+                values[i][j] = tof[i].distance
+                tof[i].clear_interrupt()
+            except:
+                pass
+        time.sleep(tof[0].timing_budget * .001)
+    print(values)
     for i in range(ch):
-        print("Distance", i, ": {} cm".format(tof[i].distance))
-        tof[i].clear_interrupt()
-    time.sleep(tof[0].timing_budget * .001)
+        try:
+            theta[i] = math.degrees(math.acos(adj/(np.mean(values[i]))))
+        except:
+            print("Problem with angle calculation", i + 1)
+        print("Hypotenuse", i+1, ": {}".format(np.mean(values[i])))
+        print("Angle of Def", i+1, ": {} cm".format(theta[i]))
+
 #     print("Distance 1: {} cm".format(distance(vl1)))
 #     print("Distance 2: {} cm".format(distance(vl2)))
 #     vl1.clear_interrupt
