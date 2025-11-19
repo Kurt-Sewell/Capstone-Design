@@ -24,17 +24,17 @@ values = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0]])
 ch = 8
 adj = 100 #cm
-theta = [None] * ch
+theta = [0] * ch
 for i in range(ch):
     try:
         tof[i] = VL53L1X(tca[i])
         tof[i].start_ranging()
         tof[i].timing_budget = 500
-        print(tof[i], "At position", i)
+        # print(tof[i], "At position", i)
     except:
         pass
     
-print("Timing Budget: {}".format(tof[0].timing_budget))
+#print("Timing Budget: {}".format(tof[0].timing_budget))
 
     
 def getAngles():
@@ -46,12 +46,13 @@ def getAngles():
             except:
                 pass
         time.sleep(tof[0].timing_budget * .001)
-    print(values)
+    # print(values)
     for i in range(ch):
         try:
             theta[i] = math.degrees(math.acos(adj/(np.mean(values[i]))))
         except:
-            print("Problem with angle calculation", i + 1)
-        print("Hypotenuse", i+1, ": {}".format(np.mean(values[i])))
-        print("Angle of Def", i+1, ": {} cm".format(theta[i]))
+             # print("Problem with angle calculation", i + 1)
+            pass
+        # print("Hypotenuse", i+1, ": {}".format(np.mean(values[i])))
+        # print("Angle of Def", i+1, ": {} deg".format(theta[i]))
     return theta
