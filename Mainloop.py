@@ -14,6 +14,11 @@ PITCHZERO = 0
 forceData = []
 tofs = [[] for i in range(8)]
 
+def dataLogger(tofData, bnoData, forceData):
+    with open("sensorDataLog.csv", "a") as f:
+        f.write("ToF1,ToF2,ToF3,ToF4,ToF5,ToF6,ToF7,ToF8,BNO055 Pitch,Force Applied (lbs)\n") if f.tell() == 0 else None
+        f.write("{},{},{}\n".format(",".join([str(x) for x in tofData]), bnoData, forceData[-1]))
+
 def getZeros(t=False, b=False):
     global TOF_ZEROS
     global PITCHZERO
