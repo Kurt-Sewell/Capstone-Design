@@ -2,6 +2,7 @@
 # FSAE Current Racing Torsion Rig Main Loop and GUI
 import VL53L1Xcode
 import BNO055onUART
+import dataLogger.py
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
@@ -13,11 +14,7 @@ TOF_ZEROS = [0] * TOF_CHANNELS
 PITCHZERO = 0
 forceData = []
 tofs = [[] for i in range(8)]
-
-def dataLogger(tofData, bnoData, forceData):
-    with open("sensorDataLog.csv", "a") as f:
-        f.write("ToF1,ToF2,ToF3,ToF4,ToF5,ToF6,ToF7,ToF8,BNO055 Pitch,Force Applied (lbs)\n") if f.tell() == 0 else None
-        f.write("{},{},{}\n".format(",".join([str(x) for x in tofData]), bnoData, forceData[-1]))
+filename = dataLogger.createUniqueFilename(["Force_lb", "ToF1_deg", "ToF2_deg", "ToF3_deg", "ToF4_deg", "ToF5_deg", "ToF6_deg", "ToF7_deg", "ToF8_deg", "Gyro_Pitch_deg"])
 
 def getZeros(t=False, b=False):
     global TOF_ZEROS
@@ -56,6 +53,7 @@ def updateDashboard():
     forceLab.config(text=f"Last Force Applied: {forceData[len(forceData)-1]:.2f} lbs", font=("Helvetica", 14))
     for line, sensor in zip(lines, tofs):
         line.set_data(forceData, sensor)
+    dataLogger.writeData(filename, tofData, bnoData, forceData)
     ax.relim()
     ax.autoscale_view()
     canvas.draw()

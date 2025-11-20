@@ -1,3 +1,5 @@
+# Written by Kurt Sewell for Oklahoma State University Capstone Design Fall 2025
+# FSAE Current Racing Torsion Rig Data Logger
 import csv
 from datetime import datetime
 
@@ -40,16 +42,16 @@ def writeData(filename, tofData, bnoData, forceData, headers=None):
             csv_writer.writerow(headers)
         csv_writer.writerow(data)
 
-filename = createUniqueFilename(["Force_lb", "ToF1_deg", "ToF2_deg", "ToF3_deg", "ToF4_deg", "ToF5_deg", "ToF6_deg", "ToF7_deg", "ToF8_deg", "Gyro_Pitch_deg"])
-tofData = [1, 10.5, 12.3, 11.0, 9.8, 10.1, 12.0, 11.5]
-bnoData = 7.8
-forceData = [100, 150, 200]
-writeData(filename, tofData, bnoData, forceData)
+# filename = createUniqueFilename(["Force_lb", "ToF1_deg", "ToF2_deg", "ToF3_deg", "ToF4_deg", "ToF5_deg", "ToF6_deg", "ToF7_deg", "ToF8_deg", "Gyro_Pitch_deg"])
+# tofData = [1, 10.5, 12.3, 11.0, 9.8, 10.1, 12.0, 11.5]
+# bnoData = 7.8
+# forceData = [100, 150, 200]
+# writeData(filename, tofData, bnoData, forceData)
 
-# You can call this function again in the same script or in subsequent runs
-# to create another uniquely named CSV file.
-another_data = [
-    ["David", 28, "Berlin"],
-    ["Eve", 42, "Tokyo"]
-]
-writeData(filename, tofData, bnoData, forceData)
+# # You can call this function again in the same script or in subsequent runs
+# # to create another uniquely named CSV file.
+# another_data = [
+#     ["David", 28, "Berlin"],
+#     ["Eve", 42, "Tokyo"]
+# ]
+# writeData(filename, tofData, bnoData, forceData)
