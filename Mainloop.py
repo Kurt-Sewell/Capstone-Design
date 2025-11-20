@@ -26,7 +26,9 @@ def getZeros(t=False, b=False):
 def runSensors():
     global PITCHZERO, TOF_ZEROS
     forceData.append(int(entry.get()))
-    tofData = VL53L1Xcode.getAngles()
+    if len(forceData) == 1:
+        tofData = VL53L1Xcode.getAngles(True)
+    tofData = VL53L1Xcode.getAngles(False)
     bnoDAta = BNO055onUART.getBNO055Data()
     # print("Angles from VL53L1X sensors: {}".format(tofData))
     # print("Gyroscope data from BNO055: {}".format(bnoDAta))

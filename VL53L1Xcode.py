@@ -23,7 +23,14 @@ values = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0],
                    [0, 0, 0, 0, 0, 0, 0, 0]])
 ch = 8
-adj = 100 #cm
+adj = np.array([[0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0],
+                   [0, 0, 0, 0, 0, 0, 0, 0]]) # adj = 100 #cm
 theta = [0] * ch
 for i in range(ch):
     try:
@@ -37,10 +44,12 @@ for i in range(ch):
 #print("Timing Budget: {}".format(tof[0].timing_budget))
 
     
-def getAngles():
+def getAngles(first=False):
     for j in range(8):
         for i in range(ch):
             try:
+                if first == True:
+                    adj[i][j] = tof[i].distance
                 values[i][j] = tof[i].distance
                 tof[i].clear_interrupt()
             except:
@@ -49,7 +58,8 @@ def getAngles():
     # print(values)
     for i in range(ch):
         try:
-            theta[i] = math.degrees(math.acos(adj/(np.mean(values[i]))))
+            theta[i] = math.degrees(math.acos(np.mean(adj[i])/(np.mean(values[i]))))
+            print(theta[i])
         except:
              # print("Problem with angle calculation", i + 1)
             pass
