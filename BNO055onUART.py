@@ -1,3 +1,5 @@
+# Written by Kurt Sewell for Oklahoma State University Capstone Design Fall 2025
+# FSAE Current Racing Torsion Rig BNO055 Gyroscope over UART
 import serial, busio, board
 import time
 import adafruit_bno055

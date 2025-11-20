@@ -1,3 +1,5 @@
+# Written by Kurt Sewell for Oklahoma State University Capstone Design Fall 2025
+# FSAE Current Racing Torsion Rig Main Loop and GUI
 import VL53L1Xcode
 import BNO055onUART
 import tkinter as tk
@@ -28,8 +30,10 @@ def runSensors():
     forceData.append(int(entry.get()))
     if len(forceData) == 1:
         tofData = VL53L1Xcode.getAngles(True)
-    tofData = VL53L1Xcode.getAngles(False)
-    bnoDAta = BNO055onUART.getBNO055Data()
+        bnoDAta = BNO055onUART.getBNO055Data()
+    else:
+        tofData = VL53L1Xcode.getAngles(False)
+        bnoDAta = BNO055onUART.getBNO055Data()
     # print("Angles from VL53L1X sensors: {}".format(tofData))
     # print("Gyroscope data from BNO055: {}".format(bnoDAta))
     # print("Force data: {}".format(forceData))
